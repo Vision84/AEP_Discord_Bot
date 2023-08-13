@@ -24,10 +24,6 @@ def is_time_to_send(current_time, class_time_str):
     time_difference = datetime.combine(date.today(), class_time) - datetime.combine(date.today(), current_time)
     return 0 <= time_difference.total_seconds() < 3600  # Check if the class time is within 1 hour from now
 
-    
-    
-
-
 
 def send_class_reminders(class_info, sender_address):
     recipients = class_info['Email'].split(';')
