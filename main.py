@@ -32,9 +32,9 @@ def send_class_reminders(class_info, sender_address):
         message = Mail(
             from_email=sender_address,
             to_emails=recipient,
-            subject=f'Class Reminder: {class_info["Item"]} Today',
+            subject=f'AEP Class Reminder: {class_info["Item"]} Today',
             html_content=f'Hello {class_info["First Name"]},<br>'
-                         f'Your class "{class_info["Item"]}" is scheduled for today.<br>'
+                         f'Your class "{class_info["Item"]}" is scheduled for today at "{class_info["Time"]}".<br>'
                          f'Remember to attend at the specified time.')
 
         try:
