@@ -25,15 +25,9 @@ def main():
             day_index = item.find(current_day_of_week)
             day = item[day_index:item.find(' ', day_index + 1)]
 
-            # if day and is_time_to_send(current_time, class_info['Time']):
             if day:
                 send_class_reminders(class_info, sender_address)
-
-def is_time_to_send(current_time, class_time_str):
-    class_time = datetime.strptime(class_time_str.split()[-2], "%I:%M %p").time()
-    time_difference = datetime.combine(date.today(), class_time) - datetime.combine(date.today(), current_time)
-    # Check if the class time is within 1 hour from now
-    return 0 <= time_difference.total_seconds() < 3600
+                
 
 #Extracting the email of the recipient
 def send_class_reminders(class_info, sender_address):
