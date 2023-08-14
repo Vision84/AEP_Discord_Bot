@@ -14,4 +14,4 @@ The AEP Gmail Bot is a Python program designed to automate the process of sendin
 - Python 3.x
 - SendGrid API key (sign up at https://sendgrid.com/)
 
-- Made with :heart: by ARandomPenguin and I-Sam-I 
+#### Made with :heart: by ARandomPenguin and I-Sam-I 
