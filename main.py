@@ -10,8 +10,7 @@ from datetime import date, datetime
 
 def main():
     # Read files
-    # class_schedule = read_class_schedule("class_schedule.csv")
-    class_schedule = read_class_schedule("test_schedule.csv")
+    class_schedule = read_class_schedule("class_schedule.csv")
     sender_address = get_sender_details("sender_details.txt")
 
     # Gets the current day of the week
