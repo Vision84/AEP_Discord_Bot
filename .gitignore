@@ -1,6 +1,7 @@
 # Private information
 sender_details.txt
 *.csv
+class_schedule.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
