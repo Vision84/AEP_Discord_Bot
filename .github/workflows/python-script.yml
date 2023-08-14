@@ -1,6 +1,6 @@
 name: Run Python Script
 
-on:
+on: push
   schedule:
     - cron: '*/1 * * * *'  # Run every minute
 
