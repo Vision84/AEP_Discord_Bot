@@ -58,23 +58,31 @@ def send_class_reminders(class_info, sender_address):
         try:
             sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
             response = sg.send(message)
-            print(response.status_code)
              
             # Capture recipient's email address
             sent_to = recipient
 
             # Create a message with the recipient's information
-            discord_message = f"Email Sent!\nName: {class_info['First Name']} {class_info['Last Name']}}}Recipient: {sent_to}\nClass: {class_info['Item']}\nTime: {class_info['Time']}"
+            discord_message = f"""
+            Email Sent!
+            Name: {class_info['First Name']} {class_info['Last Name']}
+            Recipient: {sent_to}
+            Class: {class_name}
+            Time: {start_time} - {end_time} {am_pm}\n
+            """
 
             # Send the message to Discord webhook
             webhook_url = "https://discord.com/api/webhooks/1087912305876008960/3aRKWpauzvJrhSsRL2sLTuXM8TNnv5TlaFyiqGtGKv25G2cxWsOregwsyA9hUTWAcyr5"
             data = {
                 "content": discord_message
             }
-            response = requests.post(webhook_url, json=data)
-            if response.status_code != 204:
-                print(f"Error sending to Discord webhook. Status Code: {response.status_code}")
-                print(response.content) #printing response.content for debugging purposes
+            response_discord = requests.post(webhook_url, json=data)
+
+            # Debugging purposes
+            if response_discord.status_code != 204:
+                print(f"Error sending to Discord webhook. Status Code: {response_discord.status_code}")
+                print(response_discord.content)
+
         except Exception as e:
             print(e)
 
