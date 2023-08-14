@@ -1,6 +1,6 @@
-# AEP Email Automation Bot
+# AEP Gmail Bot
 
-The AEP Email Automation Bot is a Python program designed to automate the process of sending class reminders and notifications to students enrolled in the Academic Empowenment Program (AEP).
+The AEP Gmail Bot is a Python program designed to automate the process of sending class reminders and notifications to students enrolled in the Academic Empowenment Program (AEP).
 
 ## Features
 
