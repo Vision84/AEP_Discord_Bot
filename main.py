@@ -3,17 +3,19 @@ import sys
 # import yagmail
 import csv 
 import os
+import requests
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from datetime import date, datetime
 
 
 
+
 def main():
     class_schedule = read_class_schedule("class_schedule.csv")
     sender_address, sender_password = get_sender_details("sender_details.txt")
-    current_day_of_week = date.today().strftime("%A")
-    current_time = datetime.now().time()
+    current_day_of_week = date.today().strftime("%A")#Finds the current day of the week
+    current_time = datetime.now().time()#Finds the current time
    
     for class_info in class_schedule:
             if class_info['Day'] == current_day_of_week and is_time_to_send(current_time, class_info['Time']):
@@ -35,7 +37,7 @@ def send_class_reminders(class_info, sender_address):
             subject=f'AEP Class Reminder: {class_info["Item"]} Today',
             html_content=f'Hello {class_info["First Name"]},<br>'
                          f'Your class "{class_info["Item"]}" is scheduled for today at "{class_info["Time"]}".<br>'
-                         f'Remember to attend at the specified time.')
+                         f'Please remember to attend at the specified time.')
 
         try:
             sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
@@ -43,8 +45,25 @@ def send_class_reminders(class_info, sender_address):
             print(response.status_code)
             print(response.body)
             print(response.headers)
+             
+            # Capture recipient's email address
+            sent_to = recipient
+
+            # Create a message with the recipient's information
+            discord_message = f"Email Sent!\nName: {class_info['First Name']} {class_info['Last Name']}}}Recipient: {sent_to}\nClass: {class_info['Item']}\nTime: {class_info['Time']}"
+
+            # Send the message to Discord webhook
+            webhook_url = "https://discord.com/api/webhooks/1087912305876008960/3aRKWpauzvJrhSsRL2sLTuXM8TNnv5TlaFyiqGtGKv25G2cxWsOregwsyA9hUTWAcyr5"
+            data = {
+                "content": discord_message
+            }
+            response = requests.post(webhook_url, json=data)
+            if response.status_code != 204:
+                print(f"Error sending to Discord webhook. Status Code: {response.status_code}")
+        
         except Exception as e:
             print(str(e))
+
 
             
 def read_class_schedule(filename):
