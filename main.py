@@ -1,11 +1,13 @@
+
 import sys
-import csv 
+import csv
 import os
 import requests
 import re
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+import pytz
 
 
 def main():
@@ -14,34 +16,32 @@ def main():
     sender_address = get_sender_details("sender_details.txt")
 
     # Gets the current day of the week
-    current_day_of_week = date.today().strftime("%A")
+    dt_us_central = datetime.now(pytz.timezone('US/Central'))
+    current_day_of_week = dt_us_central.strftime("%A")
 
-    # Gets the current time
-    current_time = datetime.now().time()
-   
     for class_info in class_schedule:
-            # Get the day from Item
-            item = class_info['Item']
-            day_index = item.find(current_day_of_week)
-            day = item[day_index:item.find(' ', day_index + 1)]
+        # Get the day from Item
+        item = class_info['Item']
+        day_index = item.find(current_day_of_week)
+        day = item[day_index:item.find(' ', day_index + 1)]
 
-            if day:
-                send_class_reminders(class_info, sender_address)
+        if day:
+            send_class_reminders(class_info, sender_address)
 
 
-#Extracting the email of the recipient
+# Extracting the email of the recipient
 def send_class_reminders(class_info, sender_address):
     recipients = class_info['Email'].split(';')
     item = class_info["Item"]
     start_time, end_time, am_pm = re.findall(r'(\d:\d\d) - (\d:\d\d) ?(\w\w)', item)[0]
     class_name = item[0:item.find(date.today().strftime("%A"))]
-    
+
     for recipient in recipients:
         message = Mail(
             from_email=sender_address,
-            to_emails=recipient, 
-            subject=f'AEP Class Reminder',
-            html_content= f"""
+            to_emails=recipient,
+            subject='AEP Class Reminder',
+            html_content=f"""
                         Hello {class_info["First Name"]} {class_info["Last Name"]},<br><br>
                         Your class {class_name} is scheduled for today at {start_time} - {end_time} {am_pm}.<br>
                         Please remember to join at the specified time.
@@ -51,7 +51,8 @@ def send_class_reminders(class_info, sender_address):
         try:
             sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
             response = sg.send(message)
-             
+            print(response.status_code)
+
             # Capture recipient's email address
             sent_to = recipient
 
@@ -79,7 +80,7 @@ def send_class_reminders(class_info, sender_address):
         except Exception as e:
             print(e)
 
-            
+
 def read_class_schedule(filename):
     class_schedule = []
     with open(filename, 'r', newline='', encoding='utf-8') as csv_file:
@@ -91,11 +92,11 @@ def read_class_schedule(filename):
 
 def get_sender_details(f):
     """
-    Gets the detials about the sender from f
+    Gets the details about the sender from f
     """
     try:
         with open(f, 'r') as f:
-            return f.read().split()[0]
+            return f.read()
 
     except FileNotFoundError:
         sys.exit(f"{f} Not Found.")
