@@ -33,7 +33,7 @@ def main():
 def send_class_reminders(class_info, sender_address):
     recipients = class_info['Email'].split(';')
     item = class_info["Item"]
-    start_time, end_time, am_pm = re.findall(r'(\d:\d\d) - (\d:\d\d)(\w\w)', item)[0]
+    start_time, end_time, am_pm = re.findall(r'(\d:\d\d) - (\d:\d\d) ?(\w\w)', item)[0]
     class_name = item[0:item.find(date.today().strftime("%A"))]
     
     for recipient in recipients:
