@@ -3,6 +3,7 @@
 sender_details.txt
 class_schedule.csv
 *.sh
+*.jar
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
