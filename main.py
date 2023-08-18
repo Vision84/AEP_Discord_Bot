@@ -5,7 +5,7 @@ import requests
 import re
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 import pytz
 
 
@@ -18,6 +18,8 @@ def main():
     dt_us_central = datetime.now(pytz.timezone('US/Central'))
     current_day_of_week = dt_us_central.strftime("%A")
 
+    messages = []
+
     for class_info in class_schedule:
         # Get the day from Item
         item = class_info['Item']
@@ -25,14 +27,16 @@ def main():
         day = item[day_index:item.find(' ', day_index + 1)]
 
         if day:
-            send_class_reminders(class_info, sender_address)
+            messages.append(send_class_reminders(class_info, sender_address))
+
+    return messages
 
 
 # Extracting the email of the recipient
 def send_class_reminders(class_info, sender_address):
     recipients = class_info['Email'].split(';')
     item = class_info["Item"]
-    start_time, end_time, am_pm = re.findall(r'(\d:\d\d) - (\d:\d\d) ?(\w\w)', item)[0]
+    start_time, end_time, am_pm = re.findall(r'(\d\d?:\d\d) - (\d\d?:\d\d) ?(\w\w)', item)[0]
     class_name = item[0:item.find(date.today().strftime("%A"))]
 
     for recipient in recipients:
@@ -64,6 +68,9 @@ def send_class_reminders(class_info, sender_address):
             Time: {start_time} - {end_time} {am_pm}\n
             """
 
+            return discord_message
+
+            """
             # Send the message to Discord webhook
             webhook_url = "https://discord.com/api/webhooks/1087912305876008960/3aRKWpauzvJrhSsRL2sLTuXM8TNnv5TlaFyiqGtGKv25G2cxWsOregwsyA9hUTWAcyr5"
             data = {
@@ -75,6 +82,7 @@ def send_class_reminders(class_info, sender_address):
             if response_discord.status_code != 204:
                 print(f"Error sending to Discord webhook. Status Code: {response_discord.status_code}")
                 print(response_discord.content)
+            """
 
         except Exception as e:
             print(e)
