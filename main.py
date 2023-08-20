@@ -48,9 +48,12 @@ def send_class_reminders(class_info, sender_address):
         to_emails=recipient,
         subject='AEP Class Reminder',
         html_content=f"""
-                    Hello {class_info["First Name"]} {class_info["Last Name"]},<br><br>
-                    Your class, {class_name}, is scheduled for today at {start_time} - {end_time} {am_pm}.<br>
+                    Hello {class_info["First Name"].strip().capitalize()} {class_info["Last Name"].strip().capitalize()},<br><br>
+                    Your class, {class_name.strip().title()}, is scheduled for today at {start_time.strip()} - {end_time.strip()} {am_pm.lower().strip()}.<br>
                     Please remember to join at the specified time.
+                    <br><br>
+                    Check the google classroom for the link to the meeting.
+                    Google Classrrom: https://classroom.google.com/c/NjE2OTI0NjAyNjQ3
                     """
     )
 
