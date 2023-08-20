@@ -10,6 +10,9 @@ import pytz
 
 
 def main():
+    # If new data, then filter it
+    # filter_csv("SignUpGenius (1).csv", "class_schedule.csv")
+
     # Read files
     class_schedule = read_class_schedule("class_schedule.csv")
     # class_schedule = read_class_schedule("test.csv")
@@ -91,7 +94,7 @@ def send_class_reminders(class_info, sender_address):
 def read_class_schedule(filename):
     class_schedule = []
     with open(filename, 'r', newline='', encoding='utf-8') as csv_file:
-        csv_reader = csv.DictReader(csv_file, delimiter=';')
+        csv_reader = csv.DictReader(csv_file)
         capitalize_words = ['First Name', 'Last name']
         for row in csv_reader:
             row = {k:v.title() if k in capitalize_words else v for k, v in row.items()}
@@ -109,6 +112,26 @@ def get_sender_details(f):
 
     except FileNotFoundError:
         sys.exit(f"{f} Not Found.")
+
+
+def filter_csv(in_file, out_file):
+    data = []
+    required_data = ['Item', 'First Name', 'Last Name', 'Email']
+
+    try:
+        with open(in_file, 'r') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                updated_row = {k:v for k, v in row.items() if k in required_data}
+                data.append(updated_row)
+
+        with open(out_file, 'w') as f:
+            writer = csv.DictWriter(f, fieldnames=required_data)
+            writer.writeheader()
+            writer.writerows(data)
+
+    except FileNotFoundError:
+        sys.exit(f"{in_file} Not Found.")
 
 
 if __name__ == '__main__':
