@@ -71,7 +71,6 @@ def send_class_reminders(class_info, sender_address):
 
         # Create a message with the recipient's information
         discord_message = f"""
-        Email Sent!
         Name: {fname} {lname}
         Email: {recipient}
         Class: {subject}

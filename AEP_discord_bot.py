@@ -29,7 +29,6 @@ async def greet(ctx):
 async def send_reminders(ctx):
     await ctx.respond("Sending Reminders!")
     messages = main()
-    messages = [{1: '1,2,3,44,5,5,6'}, {2: '11,12,13,144,15,15,16'}]
     table = tabulate(messages, headers='keys', tablefmt='heavy_grid', stralign='center')
     print(table)
 
