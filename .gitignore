@@ -1,6 +1,4 @@
-
 # Private information
-sender_details.txt
 *.csv
 *.sh
 *.jar
