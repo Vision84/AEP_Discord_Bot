@@ -1,25 +1,20 @@
 import csv
 import os
-import re
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-from datetime import date, datetime
+from datetime import datetime
 import pytz
 
 
 def main():
-
-    # Read files
-    # class_schedule = read_class_schedule("class_schedules/")
-    # class_schedule = read_class_schedule("test.csv")
     sender_address = "academicempowermentproject@gmail.com"
 
     # Gets the current day of the week
     dt_us_central = datetime.now(pytz.timezone('US/Central'))
     current_day_of_week = dt_us_central.strftime("%A")
 
-    # path = 'class_schedules/'
-    path = 'test/'
+    path = 'class_schedules/'
+    # path = 'test/'
     files = os.listdir(path)
 
     messages = {}
