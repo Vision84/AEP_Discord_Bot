@@ -80,6 +80,11 @@ def send_class_reminders(class_info, sender_address):
 
 
 def read_class_schedule(path, filename):
+    """
+    Reads a file and returns a list of the classes
+
+    [{"Subject": "Python", "Teacher": "Me", ...}, ...]
+    """
     class_schedule = []
     with open(path + filename, 'r') as csv_file:
         csv_reader = csv.DictReader(csv_file)

@@ -1,6 +1,5 @@
 # Private information
 *.csv
-*.sh
 *.jar
 
 # Byte-compiled / optimized / DLL files
