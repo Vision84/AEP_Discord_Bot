@@ -1,6 +1,7 @@
 # Private information
 *.csv
 *.jar
+*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,7 +1,9 @@
 import os
+import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 from main import *
+from google_sheets import *
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -9,9 +11,12 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 # bot = commands.Bot(intents=discord.Intents.all())
 bot = commands.Bot()
 
-path = 'class_schedules/'
-# path = 'test/'
-files = os.listdir(path)
+PATH = 'class_schedules/'
+# PATH = 'test/'
+FILES = os.listdir(PATH)
+
+AEP_LOGO_BG_COLOR = discord.Color.from_rgb(194, 255, 208)
+
 
 @bot.event
 async def on_ready():
@@ -39,12 +44,11 @@ async def send_reminders(ctx):
 
 
 @bot.slash_command(name='list_students', description='List the students in a class OR a teacher OR both.')
-async def list_students(ctx, class_name: str = None, teacher: str = None):
-    
+async def list_students(ctx, class_name: str = None, teacher: str = None): 
     # If only class name is provided
     if class_name and not teacher:
-        for file in files:
-            class_schedule = read_class_schedule(path, file)
+        for file in FILES:
+            class_schedule = read_class_schedule(PATH, file)
             to_return = {}
             students = []
             current_teacher = ""
@@ -61,7 +65,7 @@ async def list_students(ctx, class_name: str = None, teacher: str = None):
                 to_return[c['Teacher']] = d
 
             if flag: break
-            
+
         await ctx.respond("# " + class_name)
         for teacher_name, contents in to_return.items():
             await ctx.send("## " + teacher_name + " (" + contents['Day'] + " " + contents['Time'] + ")")
@@ -72,8 +76,8 @@ async def list_students(ctx, class_name: str = None, teacher: str = None):
     elif teacher and not class_name:
         to_return = {}
         
-        for file in files:
-            class_schedule = read_class_schedule(path, file)
+        for file in FILES:
+            class_schedule = read_class_schedule(PATH, file)
             current_subject = ""
             students = []
             for c in class_schedule:
@@ -94,8 +98,8 @@ async def list_students(ctx, class_name: str = None, teacher: str = None):
 
     # If both class and teacher is provided
     elif class_name and teacher:
-        for file in files:
-            class_schedule = read_class_schedule(path, file)
+        for file in FILES:
+            class_schedule = read_class_schedule(PATH, file)
             to_return = {}
             students = []
             flag = False
@@ -129,8 +133,8 @@ async def list_students(ctx, class_name: str = None, teacher: str = None):
 async def send_reminder_to(ctx, fname, lname):
     student_name = (fname.strip() + ' ' + lname.strip()).title()
 
-    for file in files:
-        class_schedule = read_class_schedule(path, file)
+    for file in FILES:
+        class_schedule = read_class_schedule(PATH, file)
         sender_address = "academicempowermentproject@gmail.com"
 
         for student in class_schedule:
@@ -139,5 +143,32 @@ async def send_reminder_to(ctx, fname, lname):
             if student_name == current_name:
                 await ctx.respond(send_class_reminders(student, sender_address))
 
+
+@bot.slash_command(name="links", description="Important AEP links!")
+async def links(ctx):
+
+    content = """
+    [Hours Form](https://forms.gle/DWwMJmwYSMEcCjxp9)
+    [Volunteer Handbook](https://docs.google.com/document/d/1Q3z9BfxmwWr4tAyUSLt_h1fcrgnkIy4kSKDiR6cDljM/edit?usp=sharing)
+    [Teaching Times](https://docs.google.com/spreadsheets/d/17e00rMDT5PrvMZH2Bn8vm6RkfHi3sfdGD5WFxL5K48g/edit?usp=sharing)
+    [Students List](https://docs.google.com/spreadsheets/d/191gADUNLcjJbURBXhWQ5r4v7qyecpAFVta8tZ-bCCK0/edit?usp=sharing)
+    """
+
+    embed = discord.Embed(
+        title="Important AEP Links!",
+        description=content,
+        color=AEP_LOGO_BG_COLOR
+    )
+    await ctx.respond(embed=embed)
+
+
+@bot.slash_command(name="hours", description="The number of hours someone has.")
+async def hours(ctx, name):
+    name = name.strip()
+    hours = get_hours(name.lower())
+    if hours:
+        await ctx.respond(name.title() + " has " + hours + " hours!")
+    else:
+        await ctx.respond("Error")
 
 bot.run(TOKEN)
