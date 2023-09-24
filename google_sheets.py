@@ -9,16 +9,16 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 
-# If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
-
 def oauth():
+    # If modifying these scopes, delete the file token.json.
+    scopes = ['https://www.googleapis.com/auth/spreadsheets.readonly']
+    
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
     if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+        creds = Credentials.from_authorized_user_file('token.json', scopes)
         return creds
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
@@ -26,7 +26,7 @@ def oauth():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                'credentials.json', scopes)
             creds = flow.run_local_server()
         # Save the credentials for the next run
         with open('token.json', 'w') as token:
@@ -36,6 +36,7 @@ def oauth():
 
 def get_schedules():
     CREDS = oauth()
+
     # The ID and range of the spreadsheet.
     SPREADSHEET_ID = '191gADUNLcjJbURBXhWQ5r4v7qyecpAFVta8tZ-bCCK0'
     SHEETS = ["General Math", "General English", "General Science", "Advanced Math", "Advanced Science", "Computer Science"]
