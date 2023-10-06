@@ -125,7 +125,7 @@ async def list_students(ctx, class_name: str = None, teacher: str = None):
 
     # If none
     else:
-        ctx.respond("Provide a class name or a teacher's name or both.")
+        await ctx.respond("Provide a class or a teacher's name or both.")
 
 
 @bot.slash_command(name='send_reminder_to', description='Send Reminder to a specific student.')
@@ -170,5 +170,30 @@ async def hours(ctx, name):
         await ctx.respond(name.title() + " has " + hours + " hours!")
     else:
         await ctx.respond("Error")
+
+
+@bot.slash_command(name="top_volunteers", description="The volunteers with the most hours.")
+async def top_volunteers(ctx, top_number=3):
+    try:
+        top = get_top_volunteers(int(top_number))
+
+    except Exception as e:
+        await ctx.respond("Error")
+        print(e)
+    
+    else:
+
+        embed = discord.Embed(
+            title=f"Top {top_number} Volunteers With The Most Hours",
+            color=AEP_LOGO_BG_COLOR
+        )
+
+        count = 1
+        for volunteer, hours in top:
+            embed.add_field(name=f"{count}. {volunteer}", value=f"{hours} Hours", inline=True)
+            count += 1
+
+        await ctx.respond(embed=embed)
+
 
 bot.run(TOKEN)

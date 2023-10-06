@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os.path
+from pprint import pprint
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -92,3 +93,30 @@ def get_hours(name):
     except HttpError as err:
         print(err)
         return None
+
+
+def get_top_volunteers(top):
+    CREDS = oauth()
+    try: 
+        service = build('sheets', 'v4', credentials=CREDS) 
+
+        # Call the Sheets API
+        sheet = service.spreadsheets()
+        result = sheet.values().get(spreadsheetId="1B67ypKapKiNxrbph0144ngHqt-FRRHyh-BDax7rqIMo", range="Hours!A2:B50").execute()
+        values = result.get('values', [])
+
+        if not values:
+            return None
+
+        values.sort(key=lambda x:float(x[1]), reverse=True)
+        return values[:top]
+
+
+    except HttpError as err:
+        print(err)
+        return None
+
+
+# Testing functions
+if __name__ == '__main__':
+    pprint(get_schedules())
