@@ -3,7 +3,9 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 from main import *
-from google_sheets import *
+import google_sheets
+
+from pprint import pprint
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -44,104 +46,146 @@ async def send_reminders(ctx):
 
 
 @bot.slash_command(name='list_students', description='List the students in a class OR a teacher OR both.')
-async def list_students(ctx, class_name: str = None, teacher: str = None): 
-    # If only class name is provided
-    if class_name and not teacher:
-        for file in FILES:
-            class_schedule = read_class_schedule(PATH, file)
-            to_return = {}
-            students = []
-            current_teacher = ""
-            flag = False
-            for c in class_schedule:
-                if c['Subject'].lower() != class_name.lower(): continue
+async def list_students(ctx, class_name: str = None, teacher: str = None):
+
+    schedule = google_sheets.get_schedules()
+
+    # Store all info here
+    data = {}
+
+    # "General Math", "General Science", etc.
+    for field in schedule:
+
+        # Variables
+        students = []
+
+        # If only class name is provided
+        if class_name and not teacher:
+            data[field] = {}
+
+            # Each line in the field
+            for item in schedule[field]:
+                if not item: continue # If empty, skip
                 
-                flag = True
-                if current_teacher != c['Teacher']: students = []
-                current_teacher = c['Teacher']
+                subject = item['Subject']
 
-                d = {'Day': c['Day'], 'Time': c['Start Time'] + " - " + c['End Time'], 'Students': students}
-                students.append(c['Student First Name'] + " " + c["Student Last Name"])
-                to_return[c['Teacher']] = d
+                # If not the class, skip
+                if subject.lower() != class_name.lower(): continue
 
-            if flag: break
-
-        await ctx.respond("# " + class_name)
-        for teacher_name, contents in to_return.items():
-            await ctx.send("## " + teacher_name + " (" + contents['Day'] + " " + contents['Time'] + ")")
-            for student in contents['Students']:
-                await ctx.send("- " + student)
-            
-    # If only teacher name is provided
-    elif teacher and not class_name:
-        to_return = {}
-        
-        for file in FILES:
-            class_schedule = read_class_schedule(PATH, file)
-            current_subject = ""
-            students = []
-            for c in class_schedule:
-                if c['Teacher'].lower() != teacher.lower(): continue
-
-                if current_subject != c['Subject']: students = []
-                current_subject = c['Subject']
+                if subject not in data[field]:
+                    data[field][subject] = []
                 
-                students.append(c['Student First Name'] + " " + c["Student Last Name"])
-                d = {"Day": c['Day'], 'Time': c['Start Time'] + " - " + c['End Time'], 'Students': students}
-                to_return[c['Subject']] = d
+                if item['Teacher'] not in [t['Teacher'] for t in data[field][subject]]:
+                    students = []
+                    data[field][subject].append({
+                    'Day': item['Day'],
+                    'Time': item['Start Time'] + " - " + item['End Time'],
+                    'Teacher': item['Teacher'],
+                    'Students': students
+                })
 
-        await ctx.respond("# " + teacher)
-        for subject, contents in to_return.items():
-            await ctx.send("## " + subject + " (" + contents['Day'] + " " + contents['Time'] + ")")
-            for student in contents['Students']:
-                await ctx.send("- " + student)
+                # Update students
+                students.append(item['Student First Name'] + " " + item['Student Last Name'])
 
-    # If both class and teacher is provided
-    elif class_name and teacher:
-        for file in FILES:
-            class_schedule = read_class_schedule(PATH, file)
-            to_return = {}
-            students = []
-            flag = False
+                data[field][subject][-1]['Students'] = students
 
-            for c in class_schedule:
-                if c['Subject'].lower() != class_name.lower() or c['Teacher'].lower() != teacher.lower(): continue
+        # If only teacher name is provided
+        elif teacher and not class_name:
+            data[field] = {}
 
-                flag = True
+            # Each line in the field
+            for item in schedule[field]:
+                # If empty, skip
+                if not item: continue
 
-                to_return['Day'] = c['Day']
-                to_return['Time'] = c['Start Time'] + " - " + c['End Time']
+                teacher_name = item['Teacher']
 
-                students.append(c['Student First Name'] + " " + c["Student Last Name"])
-                to_return['Students'] = students
+                if teacher_name.lower() != teacher.lower():
+                    continue
 
-            if flag: break
+                if item['Subject'] not in data[field]:
+                    data[field][item['Subject']] = []
+                    students = []
 
-        await ctx.respond("# " + class_name + " by " + teacher)
-        await ctx.send("## Day: " + to_return['Day'])
-        await ctx.send("## Time: " + to_return['Time'])
-        for student in to_return['Students']:
-            await ctx.send("- " + student)
+                    data[field][item['Subject']].append({
+                    'Day': item['Day'],
+                    'Time': item['Start Time'] + " - " + item['End Time'],
+                    'Teacher': item['Teacher'],
+                    'Students': students
+                })
 
-    # If none
+                # Update students
+                students.append(item['Student First Name'] + " " + item['Student Last Name'])
+
+                data[field][item['Subject']][-1]['Students'] = students
+
+        # If both class and teacher is provided
+        elif class_name and teacher:
+            data[field] = {}
+
+            for item in schedule[field]:
+                if not item: continue # If empty, skip
+
+                subject = item['Subject']
+                teacher_name = item['Teacher']
+
+                if subject.lower() != class_name.lower() or teacher_name.lower() != teacher.lower():
+                    continue
+
+                if item['Subject'] not in data[field]:
+                    data[field][item['Subject']] = []
+                    students = []
+
+                    data[field][item['Subject']].append({
+                    'Day': item['Day'],
+                    'Time': item['Start Time'] + " - " + item['End Time'],
+                    'Teacher': item['Teacher'],
+                    'Students': students
+                })
+
+                # Update students
+                students.append(item['Student First Name'] + " " + item['Student Last Name'])
+
+                data[field][item['Subject']][-1]['Students'] = students
+
+    # Output to Discord
+    if teacher and class_name:
+        await ctx.respond(f"# Information about {class_name} by {teacher.title()}.")
+    elif teacher:
+        await ctx.respond(f"# Information about {teacher.title()}.")
+    elif class_name:
+        await ctx.respond(f"# Information about {class_name}.")
     else:
-        await ctx.respond("Provide a class or a teacher's name or both.")
+        await ctx.respond(f"# Please provide a teacher or class name.")
+    for field, subject in data.items():
+        if not subject: continue
 
+        await ctx.send(f"# {field}")
+        for subject_name, classes in subject.items():
+            if not classes: continue
+            await ctx.send(f"## {subject_name}")
+            for _class in classes:
+                await ctx.send(f"- **__{_class['Teacher'].title()}__ ({_class['Day'].title()} {_class['Time'].upper()})**")
+                for student in _class['Students']:
+                    await ctx.send(f"᲼᲼᲼᲼∘ {student.title()}")
+        
 
 @bot.slash_command(name='send_reminder_to', description='Send Reminder to a specific student.')
 @commands.has_role('VP')
 async def send_reminder_to(ctx, fname, lname):
     student_name = (fname.strip() + ' ' + lname.strip()).title()
+    schedule = google_sheets.get_schedules()
+    sender_address = "academicempowermentproject@gmail.com"
 
-    for file in FILES:
-        class_schedule = read_class_schedule(PATH, file)
-        sender_address = "academicempowermentproject@gmail.com"
-
-        for student in class_schedule:
-            current_name = student['Student First Name'].title() + ' ' + student['Student Last Name'].title()
-            current_name = current_name.title()
+    for field in schedule:
+        for item in schedule[field]:
+            if not item: continue
+            current_name = (item['Student First Name'](
+            ) + ' ' + item['Student Last Name']()).title()
+            
             if student_name == current_name:
-                await ctx.respond(send_class_reminders(student, sender_address))
+                await ctx.respond(send_class_reminders(item, sender_address))
+                break
 
 
 @bot.slash_command(name="links", description="Important AEP links!")
@@ -165,7 +209,7 @@ async def links(ctx):
 @bot.slash_command(name="hours", description="The number of hours someone has.")
 async def hours(ctx, name):
     name = name.strip()
-    hours = get_hours(name.lower())
+    hours = google_sheets.get_hours(name.lower())
     if hours:
         await ctx.respond(name.title() + " has " + hours + " hours!")
     else:
@@ -175,12 +219,12 @@ async def hours(ctx, name):
 @bot.slash_command(name="top_volunteers", description="The volunteers with the most hours.")
 async def top_volunteers(ctx, top_number=3):
     try:
-        top = get_top_volunteers(int(top_number))
+        top = google_sheets.get_top_volunteers(int(top_number))
 
     except Exception as e:
         await ctx.respond("Error")
         print(e)
-    
+
     else:
 
         embed = discord.Embed(
@@ -190,7 +234,8 @@ async def top_volunteers(ctx, top_number=3):
 
         count = 1
         for volunteer, hours in top:
-            embed.add_field(name=f"{count}. {volunteer}", value=f"{hours} Hours", inline=True)
+            embed.add_field(name=f"{count}. {volunteer}",
+                            value=f"{hours} Hours", inline=True)
             count += 1
 
         await ctx.respond(embed=embed)
