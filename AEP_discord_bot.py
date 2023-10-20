@@ -194,7 +194,6 @@ async def links(ctx):
     content = """
     [Hours Form](https://forms.gle/DWwMJmwYSMEcCjxp9)
     [Volunteer Handbook](https://docs.google.com/document/d/1Q3z9BfxmwWr4tAyUSLt_h1fcrgnkIy4kSKDiR6cDljM/edit?usp=sharing)
-    [Teaching Times](https://docs.google.com/spreadsheets/d/17e00rMDT5PrvMZH2Bn8vm6RkfHi3sfdGD5WFxL5K48g/edit?usp=sharing)
     [Students List](https://docs.google.com/spreadsheets/d/191gADUNLcjJbURBXhWQ5r4v7qyecpAFVta8tZ-bCCK0/edit?usp=sharing)
     """
 
